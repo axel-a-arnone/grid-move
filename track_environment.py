@@ -180,6 +180,9 @@ class Car:
             return current_position
         if cell_type == 'r':
             return[x_pos, y_pos]
+        if cell_type == 'f':
+            print("You reached the finish line!")
+            return[x_pos, y_pos]
 
     def print_current_status(self):
         """
@@ -197,3 +200,4 @@ class Car:
                   width=0.05,
                   length_includes_head=True,
                   color='g')
+        plt.show()
