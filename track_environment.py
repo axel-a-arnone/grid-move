@@ -40,6 +40,17 @@ class Track:
         else:
             return width
 
+    def _is_legal_position(self, position):
+        if not isinstance(position, list):
+            raise TypeError("position should be a list")
+        if len(position) != 2:
+            raise ValueError("position should have two values")
+        try:
+            self.track_grid[tuple(position)]
+            return position
+        except KeyError:
+            raise ValueError("position is out of bounds")
+
     def _track_base(self):
         """
         Fills the cells with 'r', for cells of type road
@@ -59,7 +70,7 @@ class Track:
         """
         Shows current track as a grid of dots.
         Black dots represent cells of type road
-
+        Magenta dots represent cells of type finish
         Returns
         -------
         None.
@@ -68,13 +79,63 @@ class Track:
         # Obtaining x-y pairs from track_grid dict
         x_road_vector = []
         y_road_vector = []
+        x_finish_vector = []
+        y_finish_vector = []
         for position in self.track_grid.keys():
             cell_type = self.track_grid[position]
+            x_coord = position[0]
+            y_coord = position[1]
             if cell_type == 'r':
-                x_road_vector.append(position[0])
-                y_road_vector.append(position[1])
+                x_road_vector.append(x_coord)
+                y_road_vector.append(y_coord)
+            elif cell_type == 'f':
+                x_finish_vector.append(x_coord)
+                y_finish_vector.append(y_coord)
         # Plotting track as scatter plot
         plt.plot(x_road_vector, y_road_vector, 'ko')
+        plt.plot(x_finish_vector, y_finish_vector, 'mo')
+
+    def set_finishline(self, point_1, point_2):
+        """
+        Sets finishline of track
+
+        Parameters
+        ----------
+        point_1 : LIST
+            Position of one of .
+        point_2 : LIST
+            DESCRIPTION.
+
+        Raises
+        ------
+        ValueError
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        point_1 = self._is_legal_position(point_1)
+        point_2 = self._is_legal_position(point_2)
+        x_min = min(point_1[0], point_2[0])
+        x_max = max(point_1[0], point_2[0])
+        y_min = min(point_1[1], point_2[1])
+        y_max = max(point_1[1], point_2[1])
+        same_x_bool = x_min == x_max
+        same_y_bool = y_min == y_max
+        if same_x_bool and not same_y_bool:
+            x_coord = x_min
+            for y_idx in range(y_min, y_max+1):
+                self.track_grid[x_coord, y_idx] = 'f'
+        elif not same_x_bool and same_y_bool:
+            y_coord = y_min
+            for x_idx in range(x_min, x_max+1):
+                self.track_grid[x_idx, y_coord] = 'f'
+        elif same_x_bool and same_y_bool:
+            self.track_grid[x_min, y_min] = 'f'
+        elif not same_x_bool and not same_y_bool:
+            raise ValueError("Selected points are not aligned")
 
 
 class Car:
